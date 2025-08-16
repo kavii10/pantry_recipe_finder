@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>🍛 Pantry-Based Recipe Finder</title>
+    <style>
+        body {
+            font-family: Arial;
+            margin: 40px;
+        }
+
+        h2 {
+            color: darkorange;
+        }
+
+        .result {
+            margin-bottom: 18px;
+        }
+
+        input[type="text"] {
+            width: 320px;
+            padding: 6px;
+        }
+    </style>
+</head>
+
+<body>
+    <h2>🍛 Pantry-Based Recipe Finder</h2>
+    <form id="pantryForm">
+        <input type="text" id="ingredients" placeholder="Enter ingredients, comma separated">
+        <button type="submit">Find Recipes</button>
+    </form>
+    <h3>Results</h3>
+    <div id="results"></div>
+    <script>
+        document.getElementById("pantryForm").addEventListener("submit", async function (e) {
+            e.preventDefault();
+            const ingredients = document.getElementById("ingredients").value;
+            const res = await fetch("/match", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ ingredients })
+            });
+            const data = await res.json();
+            let html = "";
+            if (data.error) {
+                html = `<p style="color:red;">${data.error}</p>`;
+            } else if (data.length === 0) {
+                html = "<p>No recipes found for your pantry.</p>";
+            } else {
+                html += `<p>📯 Recipes matched (${data.length}) total. Showing top 10 results:</p>`;
+                data.forEach((r, i) => {
+                    html += `<div class="result"><b>${i + 1}. ${r.recipe_name} [${r.cuisine} - ${r.lang.toUpperCase()}]</b> - Score: ${r.score}, Match Ratio: ${r.match_ratio}, Missing: ${r.missing_count}<br>`
+                        + `Available: ${r.available_ingredients.join(", ")}<br>`
+                        + `Missing: ${r.missing_ingredients.join(", ")}</div>`;
+                });
+            }
+            document.getElementById("results").innerHTML = html;
+        });
+    </script>
+</body>
+
+</html>
