@@ -18,7 +18,10 @@ def match():
     if not pantry_list:
         return jsonify({"error": "No ingredients provided."}), 400
     matches = match_recipes_per_language(pantry_list, recipes)
-    return jsonify(matches[:10])
+    # Show only if there's at least one available ingredient
+    filtered = [r for r in matches if len(r['available_ingredients']) >= 1]
+    return jsonify(filtered[:10])
+
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000, debug=True)
